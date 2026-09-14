@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCA Warranty Claims</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0f1f3d;
+  --navy-light: #1a3260;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --gold-pale: #fdf6e3;
+  --white: #ffffff;
+  --off-white: #f8f7f4;
+  --border: #e4e0d8;
+  --border-dark: #c8c2b4;
+  --text-primary: #1a1a1a;
+  --text-secondary: #5a5a5a;
+  --text-muted: #9a9690;
+  --success-bg: #edf7f0;
+  --success-text: #1a6b3a;
+  --success-border: #a8dbb8;
+  --warning-bg: #fef9ec;
+  --warning-text: #8a5a00;
+  --warning-border: #f0d080;
+  --danger-bg: #fdf0ef;
+  --danger-text: #8b2218;
+  --danger-border: #f0b8b4;
+  --info-bg: #eef4fb;
+  --info-text: #1a4a7a;
+  --info-border: #b0ccea;
+  --purple-bg: #f2f0fc;
+  --purple-text: #3a2a8a;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--off-white);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.header {
+  background: var(--navy);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-logo { width: 32px; height: 32px; background: var(--gold); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--navy); }
+.header-title { font-size: 15px; font-weight: 600; color: var(--white); letter-spacing: 0.01em; }
+.header-sub { font-size: 11px; color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.sync-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.6); }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #4caf7d; transition: background 0.3s; }
+.sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
+.sync-dot.error { background: #e05a52; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: var(--radius-md); border: 1px solid transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all 0.15s; white-space: nowrap; text-decoration: none; }
+.btn-ghost { background: rgba(255,255,255,0.1); color: var(--white); border-color: rgba(255,255,255,0.2); }
+.btn-ghost:hover { background: rgba(255,255,255,0.18); }
+.btn-gold { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+.btn-gold:hover { background: var(--gold-light); }
+.btn-outline { background: var(--white); color: var(--text-primary); border-color: var(--border-dark); }
+.btn-outline:hover { background: var(--off-white); border-color: var(--text-muted); }
+.btn-danger-outline { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+.btn-danger-outline:hover { background: #fde4e2; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.main { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.metric-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem 1.25rem; box-shadow: var(--shadow-sm); }
+.metric-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+.metric-dot { width: 6px; height: 6px; border-radius: 50%; }
+.metric-value { font-size: 28px; font-weight: 600; color: var(--text-primary); line-height: 1; }
+.metric-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.metric-card.accent-gold { border-left: 3px solid var(--gold); }
+.metric-card.accent-red { border-left: 3px solid #e05a52; }
+.metric-card.accent-amber { border-left: 3px solid #e0a030; }
+.metric-card.accent-green { border-left: 3px solid #4caf7d; }
+
+.toolbar { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.toolbar input[type="text"] { flex: 1; min-width: 200px; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 12px 7px 36px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--off-white); color: var(--text-primary); outline: none; }
+.toolbar input[type="text"]:focus { border-color: var(--navy-light); background: var(--white); }
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+.toolbar select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 28px 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--off-white); color: var(--text-primary); outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239a9690' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+.toolbar select:focus { border-color: var(--navy-light); background-color: var(--white); }
+
+.defect-alert { background: var(--danger-bg); border: 1px solid var(--danger-border); border-left: 4px solid #e05a52; border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; display: none; }
+.defect-alert.show { display: block; }
+.defect-alert-title { font-size: 13px; font-weight: 600; color: var(--danger-text); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.defect-alert-msg { font-size: 12px; color: var(--danger-text); line-height: 1.7; white-space: pre-wrap; font-family: 'DM Mono', monospace; background: rgba(255,255,255,0.5); padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--danger-border); }
+.defect-alert-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+.table-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: var(--navy); color: rgba(255,255,255,0.75); padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.06); }
+thead th:last-child { border-right: none; }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f8f6f2; }
+tbody td { padding: 10px 12px; vertical-align: middle; white-space: nowrap; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+.overdue-row { background: #fff8f7 !important; }
+.overdue-row td:first-child { border-left: 3px solid #e05a52; }
+.table-empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 14px; }
+.table-footer { padding: 10px 16px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.b-elec { background: var(--info-bg); color: var(--info-text); border: 1px solid var(--info-border); }
+.b-mech { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+.b-ho { background: var(--info-bg); color: var(--info-text); border: 1px solid var(--info-border); }
+.b-os { background: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning-border); }
+.b-resolved { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+.b-dispatched { background: var(--purple-bg); color: var(--purple-text); border: 1px solid #c8c0f0; }
+.b-overdue { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); font-weight: 600; }
+.b-ok { background: var(--off-white); color: var(--text-secondary); border: 1px solid var(--border); }
+.b-defect { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+.b-oneoff { background: var(--off-white); color: var(--text-secondary); border: 1px solid var(--border); }
+.b-sea { background: var(--purple-bg); color: var(--purple-text); border: 1px solid #c8c0f0; }
+.b-yiwu { background: #fdf0f8; color: #7a2060; border: 1px solid #e8b0d8; }
+.b-accepted { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+.b-pending { background: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning-border); }
+.b-review { background: var(--info-bg); color: var(--info-text); border: 1px solid var(--info-border); }
+.b-rejected { background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+
+.action-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer; padding: 4px 7px; font-size: 13px; transition: all 0.15s; display: inline-flex; align-items: center; }
+.action-btn:hover { color: var(--navy); border-color: var(--navy-light); background: var(--off-white); }
+
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,31,61,0.55); z-index: 200; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 100%; max-width: 640px; overflow: hidden; }
+.modal-header { background: var(--navy); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-size: 15px; font-weight: 600; color: var(--white); }
+.modal-close { background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.modal-close:hover { background: rgba(255,255,255,0.2); color: var(--white); }
+.modal-body { padding: 1.5rem; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; background: var(--off-white); }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.form-group input, .form-group select, .form-group textarea { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 8px 11px; border: 1px solid var(--border-dark); border-radius: var(--radius-md); background: var(--white); color: var(--text-primary); outline: none; transition: border-color 0.15s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--navy-light); box-shadow: 0 0 0 3px rgba(26,50,96,0.08); }
+.form-group textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.form-section { grid-column: 1 / -1; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 0 4px; border-top: 1px solid var(--border); margin-top: 4px; }
+
+.detail-section { margin-bottom: 1.25rem; }
+.detail-section-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.detail-grid { display: grid; grid-template-columns: 140px 1fr; gap: 7px 12px; font-size: 13px; }
+.detail-grid dt { color: var(--text-muted); font-size: 12px; }
+.detail-grid dd { font-weight: 500; color: var(--text-primary); }
+.warranty-bar-wrap { margin-bottom: 1rem; }
+.warranty-bar-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+.warranty-bar-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.warranty-bar-fill { height: 100%; border-radius: 4px; background: var(--navy-light); transition: width 0.4s; }
+.warranty-bar-fill.warn { background: #e0a030; }
+.warranty-bar-fill.danger { background: #e05a52; }
+.sla-alert { background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: var(--radius-md); padding: 10px 12px; font-size: 12px; color: var(--danger-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.mfg-alert { background: var(--danger-bg); border: 1px solid var(--danger-border); border-left: 4px solid #e05a52; border-radius: var(--radius-md); padding: 10px 12px; font-size: 12px; color: var(--danger-text); margin-top: 1rem; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy); color: var(--white); padding: 12px 18px; border-radius: var(--radius-lg); font-size: 13px; box-shadow: var(--shadow-lg); z-index: 999; display: none; align-items: center; gap: 10px; max-width: 360px; transform: translateY(8px); transition: all 0.2s; }
+.toast.show { display: flex; transform: translateY(0); }
+.toast.err { background: #8b2218; }
+.toast.success { background: #1a6b3a; }
+
+.err-box { background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: var(--radius-md); padding: 10px 14px; font-size: 12px; color: var(--danger-text); font-family: 'DM Mono', monospace; margin-bottom: 1rem; word-break: break-all; display: none; }
+
+@media (max-width: 768px) { .main { padding: 1rem; } .header { padding: 0 1rem; } .header-sub { display: none; } .form-grid { grid-template-columns: 1fr; } .form-full { grid-column: 1; } }
+.icon { display: inline-block; vertical-align: middle; }
+
+.tab-nav { background: var(--navy-light); display: flex; padding: 0 2rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+.tab-btn { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.5); padding: 9px 14px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; background: none; border-top: none; border-left: none; border-right: none; font-family: 'DM Sans', sans-serif; }
+.tab-btn:hover { color: rgba(255,255,255,.8); }
+.tab-btn.active { color: #fff; border-bottom-color: var(--gold); }
+.tbadge { background: rgba(255,255,255,.15); font-size: 10px; padding: 1px 5px; border-radius: 8px; font-family: 'DM Mono', monospace; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.sec-pane { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+.sec-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.sec-toolbar input, .sec-toolbar select { font-family: 'DM Sans', sans-serif; font-size: 12.5px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--white); color: var(--text-primary); outline: none; }
+.sec-toolbar select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239a9690' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
+.sec-mbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.sec-mc { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 10px 14px; min-width: 110px; box-shadow: var(--shadow-sm); }
+.sec-mc.gl { border-left: 3px solid var(--gold); } .sec-mc.bl { border-left: 3px solid #378ADD; } .sec-mc.al { border-left: 3px solid #e0a030; } .sec-mc.gr { border-left: 3px solid #4caf7d; }
+.sec-mc .mlabel { font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.sec-mc .mval { font-size: 22px; font-weight: 600; }
+
+.overlay2 { display: none; position: fixed; inset: 0; background: rgba(15,31,61,.5); z-index: 200; align-items: flex-start; justify-content: center; padding: 28px 16px; overflow-y: auto; }
+.overlay2.open { display: flex; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    </div>
+    <div>
+      <div class="header-title">HCA Warranty Claims</div>
+      <div class="header-sub">HARI CHAND ANAND &amp; CO &middot; HCAM LLP</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="sync-indicator">
+      <div class="sync-dot syncing" id="sync-dot"></div>
+      <span id="sync-status">Connecting...</span>
+    </div>
+    <a href="https://docs.google.com/spreadsheets/d/1reK3x-ZFjPtpSjJ3PAHAM9BxYKggwcc2GWzTuuhPo5s/edit" target="_blank" class="btn btn-ghost" style="font-size:12px;padding:5px 12px">
+      <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Sheet
+    </a>
+    <button class="btn btn-ghost" onclick="loadData()" style="font-size:12px;padding:5px 12px">
+      <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync
+    </button>
+    <button class="btn btn-danger-outline" onclick="openDefectAlert()" style="font-size:12px;padding:5px 12px">
+      <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Defect alert
+    </button>
+    <button class="btn btn-gold" onclick="openNewClaim()">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New claim
+    </button>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" id="tbtn-claims" onclick="switchTab('claims')">Claims <span class="tbadge" id="tbadge-claims">0</span></button>
+  <button class="tab-btn" id="tbtn-issues" onclick="switchTab('issues')">Issues <span class="tbadge" id="tbadge-issues">0</span></button>
+  <button class="tab-btn" id="tbtn-returns" onclick="switchTab('returns')">Returns <span class="tbadge" id="tbadge-returns">0</span></button>
+  <button class="tab-btn" id="tbtn-challans" onclick="switchTab('challans')">Challans <span class="tbadge" id="tbadge-challans">0</span></button>
+</nav>
+
+<!-- CLAIMS -->
+<div class="tab-pane active" id="pane-claims">
+<main class="main">
+  <div class="metrics" id="metrics">
+    <div class="metric-card accent-gold"><div class="metric-label">Total claims</div><div class="metric-value" id="m-total">&mdash;</div><div class="metric-sub">all time</div></div>
+    <div class="metric-card"><div class="metric-label"><span class="metric-dot" style="background:#378ADD"></span>Open</div><div class="metric-value" id="m-open">&mdash;</div><div class="metric-sub">active</div></div>
+    <div class="metric-card accent-red"><div class="metric-label"><span class="metric-dot" style="background:#e05a52"></span>Overdue &gt;15d</div><div class="metric-value" id="m-overdue">&mdash;</div><div class="metric-sub">needs action</div></div>
+    <div class="metric-card accent-amber"><div class="metric-label"><span class="metric-dot" style="background:#e0a030"></span>Mfg defects</div><div class="metric-value" id="m-defects">&mdash;</div><div class="metric-sub">flagged</div></div>
+    <div class="metric-card accent-green"><div class="metric-label"><span class="metric-dot" style="background:#4caf7d"></span>Resolved</div><div class="metric-value" id="m-resolved">&mdash;</div><div class="metric-sub">closed</div></div>
+  </div>
+  <div class="err-box" id="err-box"></div>
+  <div class="defect-alert" id="defect-alert-box">
+    <div class="defect-alert-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Manufacturing defect alert &mdash; draft message for all offices
+    </div>
+    <div class="defect-alert-msg" id="defect-alert-msg"></div>
+    <div class="defect-alert-actions">
+      <button class="btn btn-danger-outline" onclick="copyAlert()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy message</button>
+      <button class="btn btn-outline" onclick="document.getElementById('defect-alert-box').classList.remove('show')">Dismiss</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search" placeholder="Search machine, customer, invoice, part..." oninput="renderTable()" style="width:100%;padding-left:34px">
+    </div>
+    <select id="f-status" onchange="renderTable()"><option value="">All statuses</option><option>Open — HO has part</option><option>Open — OS claim raised</option><option>Part dispatched</option><option>Resolved</option></select>
+    <select id="f-type" onchange="renderTable()"><option value="">All warranty types</option><option>Electronic (3 yr)</option><option>Mechanical (1.2 yr)</option></select>
+    <select id="f-issue" onchange="renderTable()"><option value="">All issue types</option><option>One-off complaint</option><option>Manufacturing defect</option></select>
+    <select id="f-office" onchange="renderTable()"><option value="">All offices</option><option>HO Delhi</option><option>Kolkata</option><option>Mumbai</option><option>Chennai</option><option>Ahmedabad</option></select>
+    <select id="f-sla" onchange="renderTable()"><option value="">All SLA</option><option value="overdue">Overdue only</option></select>
+  </div>
+  <div class="table-card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Claim ID</th><th>Invoice no.</th><th>Sale date</th><th>Customer</th><th>Machine</th><th>Warranty</th><th>Expires</th><th>Part needed</th><th>HO status</th><th>Supplier</th><th>Routing</th><th>Issue type</th><th>Office</th><th>SLA (15d)</th><th style="width:70px"></th></tr></thead>
+        <tbody id="claims-body"><tr><td colspan="15" class="table-empty">Loading from Google Sheets...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="table-footer"><span id="row-count" style="color:var(--text-muted)"></span><span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace">SLA flag = 15 days</span></div>
+  </div>
+</main>
+</div>
+
+<!-- ISSUES -->
+<div class="tab-pane" id="pane-issues">
+  <div class="sec-pane">
+    <div class="sec-mbar">
+      <div class="sec-mc gl"><div class="mlabel">Total</div><div class="mval" id="i-tot">&mdash;</div></div>
+      <div class="sec-mc bl"><div class="mlabel">Open</div><div class="mval" id="i-open">&mdash;</div></div>
+      <div class="sec-mc al"><div class="mlabel">In progress</div><div class="mval" id="i-prog">&mdash;</div></div>
+      <div class="sec-mc gr"><div class="mlabel">Closed</div><div class="mval" id="i-cls">&mdash;</div></div>
+    </div>
+    <div class="sec-toolbar">
+      <input type="text" id="i-q" placeholder="Search..." oninput="renderIssues()" style="flex:1;min-width:160px">
+      <select id="i-st" onchange="renderIssues()"><option value="">All statuses</option><option>Open</option><option>In progress</option><option>Closed</option></select>
+      <select id="i-of" onchange="renderIssues()"><option value="">All offices</option><option>Kolkata</option><option>HO Delhi</option><option>Mumbai</option><option>Chennai</option><option>Ahmedabad</option></select>
+      <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="i-sc" onchange="renderIssues()"> Show closed</label>
+      <button class="btn btn-gold" style="padding:6px 13px;font-size:12px" onclick="openNewIssue()">+ Log issue</button>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table><thead><tr><th>Issue ID</th><th>Date</th><th>Office</th><th>Customer</th><th>Machine</th><th>Serial</th><th>Description</th><th>Priority</th><th>Status</th><th>Assigned</th><th style="width:50px"></th></tr></thead>
+        <tbody id="i-body"><tr><td colspan="11" class="table-empty">Click Issues tab to load</td></tr></tbody></table>
+      </div>
+      <div class="table-footer"><span id="i-foot"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- RETURNS -->
+<div class="tab-pane" id="pane-returns">
+  <div class="sec-pane">
+    <div class="sec-mbar">
+      <div class="sec-mc gl"><div class="mlabel">Total</div><div class="mval" id="r-tot">&mdash;</div></div>
+      <div class="sec-mc al"><div class="mlabel">Pending</div><div class="mval" id="r-pend">&mdash;</div></div>
+      <div class="sec-mc bl"><div class="mlabel">Sent</div><div class="mval" id="r-sent">&mdash;</div></div>
+      <div class="sec-mc gr"><div class="mlabel">Acknowledged</div><div class="mval" id="r-ack">&mdash;</div></div>
+    </div>
+    <div class="sec-toolbar">
+      <input type="text" id="r-q" placeholder="Search..." oninput="renderReturns()" style="flex:1;min-width:160px">
+      <select id="r-st" onchange="renderReturns()"><option value="">All statuses</option><option>Pending</option><option>Sent</option><option>Acknowledged</option></select>
+      <select id="r-de" onchange="renderReturns()"><option value="">All destinations</option><option>HO Delhi</option><option>China supplier</option><option>Scrapped</option></select>
+      <button class="btn btn-gold" style="padding:6px 13px;font-size:12px" onclick="openNewReturn()">+ Log return</button>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table><thead><tr><th>Return ID</th><th>Claim ID</th><th>Date</th><th>Customer</th><th>Machine</th><th>Parts</th><th>Destination</th><th>Mode</th><th>Challan</th><th>Status</th><th style="width:50px"></th></tr></thead>
+        <tbody id="r-body"><tr><td colspan="11" class="table-empty">Click Returns tab to load</td></tr></tbody></table>
+      </div>
+      <div class="table-footer"><span id="r-foot"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CHALLANS -->
+<div class="tab-pane" id="pane-challans">
+  <div class="sec-pane">
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;text-align:center;color:var(--text-muted);box-shadow:var(--shadow-sm)">
+      <p style="font-size:14px;font-weight:500;margin-bottom:8px">Challans &amp; Tally import</p>
+      <p style="font-size:13px">Coming in next update.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CLAIMS MODALS -->
+<div class="modal-overlay" id="claim-modal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-title">New claim</h3><button class="modal-close" onclick="closeModal('claim-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Office raising claim</label><select id="f-office-name"><option>HO Delhi</option><option>Kolkata</option><option>Mumbai</option><option>Chennai</option><option>Ahmedabad</option></select></div>
+        <div class="form-group"><label>Invoice no.</label><input type="text" id="f-invoice" placeholder="e.g. INV-2024-1234"></div>
+        <div class="form-group"><label>Date of sale</label><input type="date" id="f-sale-date"></div>
+        <div class="form-group"><label>Claim date</label><input type="date" id="f-claim-date"></div>
+        <div class="form-group"><label>Customer name</label><input type="text" id="f-customer" placeholder="Company / individual"></div>
+        <div class="form-group"><label>Customer location</label><input type="text" id="f-location" placeholder="City"></div>
+        <div class="form-group"><label>Machine model</label><input type="text" id="f-machine" placeholder="e.g. DUKE DY-9800"></div>
+        <div class="form-group"><label>Serial no.</label><input type="text" id="f-serial" placeholder="S/N"></div>
+        <div class="form-group"><label>Warranty type</label><select id="f-warranty-type"><option>Electronic (3 yr)</option><option>Mechanical (1.2 yr)</option></select></div>
+        <div class="form-group"><label>Part(s) needed</label><input type="text" id="f-part" placeholder="Part name / code"></div>
+        <div class="form-section">HO Delhi &mdash; stock &amp; routing</div>
+        <div class="form-group"><label>HO stock status</label><select id="f-ho-status"><option>Part available at HO</option><option>Not available — OS claim raised</option><option>Pending check</option></select></div>
+        <div class="form-group"><label>Claim status</label><select id="f-claim-status"><option>Open — HO has part</option><option>Open — OS claim raised</option><option>Part dispatched</option><option>Resolved</option></select></div>
+        <div class="form-section">Overseas supplier</div>
+        <div class="form-group"><label>Supplier accepted claim?</label><select id="f-supplier-accepted"><option>Pending</option><option>Accepted</option><option>Rejected</option><option>Under review</option></select></div>
+        <div class="form-group"><label>Part routing</label><select id="f-routing"><option>—</option><option>Via Yiwu office (urgent)</option><option>By sea — bulk shipment with machines</option><option>Direct to HCA</option></select></div>
+        <div class="form-group"><label>Expected arrival</label><input type="date" id="f-eta"></div>
+        <div class="form-group"><label>Issue type</label><select id="f-issue-type" onchange="toggleDefectNote()"><option>One-off complaint</option><option>Manufacturing defect</option></select></div>
+        <div class="form-full form-group" id="defect-note-group" style="display:none"><label>Defect description</label><textarea id="f-defect-note" placeholder="Describe the defect clearly..."></textarea></div>
+        <div class="form-full form-group"><label>Internal notes</label><textarea id="f-notes" placeholder="Any additional notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('claim-modal')">Cancel</button>
+      <button class="btn btn-gold" id="save-btn" onclick="saveClaim()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Save to sheet</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="detail-title">Claim detail</h3><button class="modal-close" onclick="closeModal('detail-modal')">✕</button></div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('detail-modal')">Close</button>
+      <button class="btn btn-gold" id="detail-edit-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit claim</button>
+    </div>
+  </div>
+</div>
+
+<!-- ISSUE MODAL -->
+<div class="overlay2" id="issue-modal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="im-title">Log machine issue</h3><button class="modal-close" onclick="closeOverlay2('issue-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Date</label><input type="date" id="i-date"></div>
+        <div class="form-group"><label>Office</label><select id="i-off"><option>Kolkata</option><option>HO Delhi</option><option>Mumbai</option><option>Chennai</option><option>Ahmedabad</option></select></div>
+        <div class="form-group"><label>Customer</label><input type="text" id="i-cust" placeholder="Company name"></div>
+        <div class="form-group"><label>Location</label><input type="text" id="i-loc" placeholder="City"></div>
+        <div class="form-group"><label>Machine model</label><input type="text" id="i-mach"></div>
+        <div class="form-group"><label>Serial no.</label><input type="text" id="i-ser"></div>
+        <div class="form-full form-group"><label>Issue description</label><textarea id="i-desc" placeholder="Describe the issue..."></textarea></div>
+        <div class="form-group"><label>Priority</label><select id="i-pri"><option>High</option><option>Medium</option><option>Low</option></select></div>
+        <div class="form-group"><label>Status</label><select id="i-sta"><option>Open</option><option>In progress</option><option>Closed</option></select></div>
+        <div class="form-group"><label>Assigned to</label><input type="text" id="i-asgn" placeholder="Name"></div>
+        <div class="form-group"><label>Invoice no.</label><input type="text" id="i-inv2"></div>
+        <div class="form-full form-group"><label>Media link</label><input type="text" id="i-med" placeholder="Google Drive link"></div>
+        <div class="form-full form-group"><label>Resolution notes</label><textarea id="i-res" placeholder="How was it resolved?"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeOverlay2('issue-modal')">Cancel</button>
+      <button class="btn btn-gold" id="save-issue-btn" onclick="saveIssue()">Save issue</button>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN MODAL -->
+<div class="overlay2" id="return-modal">
+  <div class="modal">
+    <div class="modal-header"><h3 id="rm-title">Log return</h3><button class="modal-close" onclick="closeOverlay2('return-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Date</label><input type="date" id="r-date"></div>
+        <div class="form-group"><label>Claim ID</label><input type="text" id="r-clm" placeholder="WC-XXX"></div>
+        <div class="form-group"><label>Customer</label><input type="text" id="r-cust"></div>
+        <div class="form-group"><label>Machine</label><input type="text" id="r-mach"></div>
+        <div class="form-full form-group"><label>Parts returned</label><textarea id="r-prts" placeholder="List parts..."></textarea></div>
+        <div class="form-group"><label>Destination</label><select id="r-dest"><option>HO Delhi</option><option>China supplier</option><option>Scrapped</option></select></div>
+        <div class="form-group"><label>Mode</label><select id="r-mode"><option>Courier</option><option>Hand carried</option><option>Sea freight</option><option>Bus/transport</option></select></div>
+        <div class="form-group"><label>Challan no.</label><input type="text" id="r-chal"></div>
+        <div class="form-group"><label>Tracking no.</label><input type="text" id="r-trk"></div>
+        <div class="form-group"><label>Status</label><select id="r-sta"><option>Pending</option><option>Sent</option><option>Acknowledged</option></select></div>
+        <div class="form-full form-group"><label>Notes</label><textarea id="r-nts"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeOverlay2('return-modal')">Cancel</button>
+      <button class="btn btn-gold" id="save-return-btn" onclick="saveReturn()">Save return</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script>
+var PROXY = 'https://script.google.com/macros/s/AKfycbz-Yu8qYSwMq_kzuSH2o72vzCHheUJjrOVOWjM5wYCKMDCo3fR5ezzEfTFoQW8U1wkP/exec';
+var SLA_DAYS = 15;
+var HEADERS = ['Claim ID','Office','Invoice No','Sale Date','Claim Date','Customer','Location','Machine Model','Serial No','Warranty Type','Part Needed','HO Status','Claim Status','Supplier Accepted','Routing','ETA','Issue Type','Notes'];
+var claims = [], issues2 = [], returns2 = [];
+var editingId = null, editingRow = null;
+var editIssueId = null, editIssueRow = null, editReturnId = null;
+var today = new Date();
+var todayStr = today.toISOString().split('T')[0];
+
+function setSyncStatus(state, msg) {
+  document.getElementById('sync-dot').className = 'sync-dot' + (state==='syncing'?' syncing':state==='error'?' error':'');
+  document.getElementById('sync-status').textContent = msg;
+}
+function showErr(msg) { var el=document.getElementById('err-box'); el.style.display='block'; el.textContent='Error: '+msg; }
+function hideErr() { document.getElementById('err-box').style.display='none'; }
+function showToast(msg, type) {
+  var t=document.getElementById('toast');
+  t.className='toast show'+(type==='err'?' err':type==='success'?' success':'');
+  document.getElementById('toast-msg').textContent=msg;
+  setTimeout(function(){t.className='toast';},3500);
+}
+function fmtDate(d) {
+  if(!d)return'—';
+  var dt=new Date(d);
+  if(isNaN(dt))return d;
+  return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeOverlay2(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay,.overlay2').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open');});});
+
+function switchTab(name) {
+  ['claims','issues','returns','challans'].forEach(function(n){
+    document.getElementById('tbtn-'+n).className='tab-btn'+(n===name?' active':'');
+    document.getElementById('pane-'+n).className='tab-pane'+(n===name?' active':'');
+  });
+  if(name==='issues' && issues2.length===0) loadIssues();
+  if(name==='returns' && returns2.length===0) loadReturns();
+}
+
+async function post(payload) {
+  var res=await fetch(PROXY,{method:'POST',redirect:'follow',body:JSON.stringify(payload)});
+  var text=await res.text();
+  var data; try{data=JSON.parse(text);}catch(e){throw new Error('Non-JSON: '+text.substring(0,200));}
+  if(data.error)throw new Error(data.error);
+  return data;
+}
+
+// ── CLAIMS ──
+async function loadData() {
+  setSyncStatus('syncing','Syncing...');
+  hideErr();
+  try {
+    var res=await fetch(PROXY+'?sheet=Claims',{redirect:'follow'});
+    var text=await res.text();
+    var data; try{data=JSON.parse(text);}catch(e){throw new Error('Non-JSON: '+text.substring(0,300));}
+    if(data.error)throw new Error(data.error);
+    var rows=data.values||[];
+    var start=rows.length&&rows[0][0]==='Claim ID'?1:0;
+    if(rows.length===0){await post({action:'append',sheet:'Claims',row:HEADERS});}
+    claims=rows.slice(start).filter(function(r){return r[0];}).map(function(r,i){return{
+      _row:i+start+1,id:r[0]||'',office:r[1]||'',invoice:r[2]||'',saleDate:r[3]||'',
+      claimDate:r[4]||'',customer:r[5]||'',location:r[6]||'',machine:r[7]||'',
+      serial:r[8]||'',warrantyType:r[9]||'',part:r[10]||'',hoStatus:r[11]||'',
+      claimStatus:r[12]||'',supplierAccepted:r[13]||'',routing:r[14]||'',eta:r[15]||'',
+      issueType:r[16]||'',notes:r[17]||''};});
+    setSyncStatus('ok','Synced · '+claims.length+' claim'+(claims.length!==1?'s':'')+' · '+new Date().toLocaleTimeString('en-IN'));
+    var open=claims.filter(function(c){return c.claimStatus!=='Resolved';}).length;
+    document.getElementById('tbadge-claims').textContent=open;
+    renderTable();
+  } catch(e) { setSyncStatus('error','Sync failed'); showErr(e.message); }
+}
+
+function warrantyExpiry(saleDate,type){
+  if(!saleDate)return new Date();
+  var d=new Date(saleDate);
+  if(type==='Electronic (3 yr)')d.setFullYear(d.getFullYear()+3);
+  else d.setMonth(d.getMonth()+Math.round(1.2*12));
+  return d;
+}
+function daysLeft(exp){return Math.round((exp-today)/86400000);}
+function ageDays(cd){return Math.round((today-new Date(cd))/86400000);}
+
+function renderMetrics(){
+  var open=claims.filter(function(c){return c.claimStatus!=='Resolved';}).length;
+  var overdue=claims.filter(function(c){return c.claimStatus!=='Resolved'&&ageDays(c.claimDate)>SLA_DAYS;}).length;
+  var defects=claims.filter(function(c){return c.issueType==='Manufacturing defect';}).length;
+  var resolved=claims.filter(function(c){return c.claimStatus==='Resolved';}).length;
+  document.getElementById('m-total').textContent=claims.length;
+  document.getElementById('m-open').textContent=open;
+  document.getElementById('m-overdue').textContent=overdue;
+  document.getElementById('m-defects').textContent=defects;
+  document.getElementById('m-resolved').textContent=resolved;
+}
+function routingBadge(r){
+  if(!r||r==='—')return'<span style="color:#9a9690">—</span>';
+  if(r.includes('Yiwu'))return'<span class="badge b-yiwu">Yiwu urgent</span>';
+  if(r.includes('sea'))return'<span class="badge b-sea">Sea shipment</span>';
+  return'<span class="badge b-oneoff">'+r+'</span>';
+}
+function statusBadge(s){
+  if(s==='Resolved')return'<span class="badge b-resolved">Resolved</span>';
+  if(s==='Part dispatched')return'<span class="badge b-dispatched">Dispatched</span>';
+  if(s&&s.includes('HO has'))return'<span class="badge b-ho">HO — in stock</span>';
+  return'<span class="badge b-os">OS — claimed</span>';
+}
+function supplierBadge(s){
+  if(s==='Accepted')return'<span class="badge b-accepted">Accepted</span>';
+  if(s==='Rejected')return'<span class="badge b-rejected">Rejected</span>';
+  if(s==='Under review')return'<span class="badge b-review">Review</span>';
+  return'<span class="badge b-pending">Pending</span>';
+}
+function renderTable(){
+  var q=document.getElementById('search').value.toLowerCase();
+  var fs=document.getElementById('f-status').value;
+  var ft=document.getElementById('f-type').value;
+  var fi=document.getElementById('f-issue').value;
+  var fo=document.getElementById('f-office').value;
+  var fsl=document.getElementById('f-sla').value;
+  var filtered=claims.filter(function(c){
+    var txt=[c.id,c.customer,c.machine,c.part,c.location,c.invoice,c.serial].join(' ').toLowerCase();
+    var isOD=c.claimStatus!=='Resolved'&&ageDays(c.claimDate)>SLA_DAYS;
+    return(!q||txt.includes(q))&&(!fs||c.claimStatus===fs)&&(!ft||c.warrantyType===ft)
+      &&(!fi||c.issueType===fi)&&(!fo||c.office===fo)&&(!fsl||(fsl==='overdue'&&isOD));
+  });
+  var body=document.getElementById('claims-body');
+  if(!filtered.length){
+    body.innerHTML='<tr><td colspan="15" class="table-empty">'+(claims.length?'No claims match filters.':'No claims yet — click "New claim" to add one.')+'</td></tr>';
+    document.getElementById('row-count').textContent='';renderMetrics();return;
+  }
+  var html='';
+  filtered.forEach(function(c){
+    var exp=warrantyExpiry(c.saleDate,c.warrantyType);
+    var dl=daysLeft(exp);
+    var age=ageDays(c.claimDate);
+    var isOD=c.claimStatus!=='Resolved'&&age>SLA_DAYS;
+    var isDef=c.issueType==='Manufacturing defect';
+    var slaBadge=c.claimStatus==='Resolved'
+      ?'<span class="badge b-resolved">Done</span>'
+      :isOD?'<span class="badge b-overdue">⚠ '+age+'d/15d</span>'
+      :'<span class="badge b-ok">'+age+'d/15d</span>';
+    var ec=dl<90?'#e05a52':dl<180?'#c08030':'#1a1a1a';
+    html+='<tr class="'+(isOD?'overdue-row':'')+'">'+
+      '<td style="font-weight:600;font-family:'DM Mono',monospace;font-size:12px">'+c.id+(isDef?' <span style="color:#e05a52">⚠</span>':'')+'</td>'+
+      '<td style="font-family:'DM Mono',monospace;font-size:12px">'+c.invoice+'</td>'+
+      '<td style="font-size:12px">'+fmtDate(c.saleDate)+'</td>'+
+      '<td title="'+c.customer+', '+c.location+'" style="max-width:140px">'+c.customer+'</td>'+
+      '<td title="'+c.machine+' S/N '+c.serial+'">'+c.machine+'</td>'+
+      '<td><span class="badge '+(c.warrantyType&&c.warrantyType.startsWith('E')?'b-elec':'b-mech')+'">'+(c.warrantyType&&c.warrantyType.startsWith('E')?'Elec 3yr':'Mech 1.2yr')+'</span></td>'+
+      '<td style="color:'+ec+';font-size:12px">'+(c.saleDate?fmtDate(exp.toISOString().split('T')[0]):'—')+'</td>'+
+      '<td title="'+c.part+'" style="max-width:130px">'+c.part+'</td>'+
+      '<td>'+statusBadge(c.claimStatus)+'</td>'+
+      '<td>'+supplierBadge(c.supplierAccepted)+'</td>'+
+      '<td>'+routingBadge(c.routing)+'</td>'+
+      '<td><span class="badge '+(isDef?'b-defect':'b-oneoff')+'">'+(isDef?'Mfg defect':'One-off')+'</span></td>'+
+      '<td style="font-size:12px">'+c.office+'</td>'+
+      '<td>'+slaBadge+'</td>'+
+      '<td style="display:flex;gap:4px">'+
+        '<button class="action-btn" title="View" onclick="openDetail(''+c.id+'')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>'+
+        '<button class="action-btn" title="Edit" onclick="openEdit(''+c.id+'')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'+
+      '</td></tr>';
+  });
+  body.innerHTML=html;
+  document.getElementById('row-count').textContent='Showing '+filtered.length+' of '+claims.length+' claims';
+  renderMetrics();
+}
+function openDetail(id){
+  var c=claims.find(function(x){return x.id===id;});if(!c)return;
+  var exp=warrantyExpiry(c.saleDate,c.warrantyType);
+  var dl=daysLeft(exp);
+  var totalDays=c.warrantyType&&c.warrantyType.startsWith('E')?1095:438;
+  var pct=Math.max(0,Math.min(100,100-(dl/totalDays)*100));
+  var fillCls=dl<90?'danger':dl<180?'warn':'';
+  var age=ageDays(c.claimDate);
+  var isOD=c.claimStatus!=='Resolved'&&age>SLA_DAYS;
+  document.getElementById('detail-title').textContent=c.id+' — '+c.machine;
+  document.getElementById('detail-body').innerHTML=
+    '<div class="warranty-bar-wrap"><div class="warranty-bar-label"><span>Warranty remaining</span><span style="font-weight:500">'+(dl>0?dl+' days left':'EXPIRED')+'</span></div>'+
+    '<div class="warranty-bar-track"><div class="warranty-bar-fill '+fillCls+'" style="width:'+Math.round(pct)+'%"></div></div>'+
+    '<div style="font-size:11px;color:var(--text-muted);margin-top:4px">Expires '+(c.saleDate?fmtDate(exp.toISOString().split('T')[0]):'—')+'</div></div>'+
+    (isOD?'<div class="sla-alert">SLA overdue — claim is <strong>'+age+' days old</strong> (limit: 15 days)</div>':'')+
+    '<div class="detail-section"><div class="detail-section-title">Claim &amp; customer</div><dl class="detail-grid">'+
+    '<dt>Office</dt><dd>'+c.office+'</dd><dt>Invoice no.</dt><dd style="font-family:'DM Mono',monospace">'+c.invoice+'</dd>'+
+    '<dt>Sale date</dt><dd>'+fmtDate(c.saleDate)+'</dd><dt>Claim date</dt><dd>'+fmtDate(c.claimDate)+'</dd>'+
+    '<dt>Customer</dt><dd>'+c.customer+'</dd><dt>Location</dt><dd>'+c.location+'</dd>'+
+    '<dt>Machine</dt><dd>'+c.machine+'</dd><dt>Serial no.</dt><dd>'+c.serial+'</dd>'+
+    '<dt>Part needed</dt><dd>'+c.part+'</dd></dl></div>'+
+    '<div class="detail-section"><div class="detail-section-title">Status &amp; routing</div><dl class="detail-grid">'+
+    '<dt>HO status</dt><dd>'+c.hoStatus+'</dd><dt>Claim status</dt><dd>'+c.claimStatus+'</dd>'+
+    '<dt>Supplier</dt><dd>'+c.supplierAccepted+'</dd><dt>Routing</dt><dd>'+(c.routing||'—')+'</dd>'+
+    '<dt>Expected arrival</dt><dd>'+fmtDate(c.eta)+'</dd><dt>Issue type</dt><dd>'+c.issueType+'</dd></dl></div>'+
+    (c.notes?'<div class="detail-section"><div class="detail-section-title">Notes</div><div style="font-size:13px;line-height:1.6;color:var(--text-secondary)">'+c.notes+'</div></div>':'')+
+    (c.issueType==='Manufacturing defect'?'<div class="mfg-alert"><strong>⚠ Manufacturing defect flagged</strong> — all offices must be informed. Ensure extra spares for <strong>'+c.machine+'</strong> are pre-ordered.</div>':'');
+  document.getElementById('detail-edit-btn').onclick=function(){closeModal('detail-modal');openEdit(id);};
+  document.getElementById('detail-modal').classList.add('open');
+}
+function openEdit(id){
+  editingId=id;
+  var c=claims.find(function(x){return x.id===id;});
+  editingRow=c._row;
+  document.getElementById('modal-title').textContent='Edit — '+c.id;
+  document.getElementById('f-office-name').value=c.office;
+  document.getElementById('f-invoice').value=c.invoice;
+  document.getElementById('f-sale-date').value=c.saleDate;
+  document.getElementById('f-claim-date').value=c.claimDate;
+  document.getElementById('f-customer').value=c.customer;
+  document.getElementById('f-location').value=c.location;
+  document.getElementById('f-machine').value=c.machine;
+  document.getElementById('f-serial').value=c.serial;
+  document.getElementById('f-warranty-type').value=c.warrantyType;
+  document.getElementById('f-part').value=c.part;
+  document.getElementById('f-ho-status').value=c.hoStatus;
+  document.getElementById('f-claim-status').value=c.claimStatus;
+  document.getElementById('f-supplier-accepted').value=c.supplierAccepted;
+  document.getElementById('f-routing').value=c.routing||'—';
+  document.getElementById('f-eta').value=c.eta||'';
+  document.getElementById('f-issue-type').value=c.issueType;
+  document.getElementById('f-defect-note').value=c.notes||'';
+  document.getElementById('f-notes').value=c.notes||'';
+  toggleDefectNote();
+  document.getElementById('claim-modal').classList.add('open');
+}
+function openNewClaim(){
+  editingId=null;editingRow=null;
+  document.getElementById('modal-title').textContent='New claim';
+  ['f-invoice','f-sale-date','f-customer','f-location','f-machine','f-serial','f-part','f-eta','f-defect-note','f-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('f-office-name').value='Kolkata';
+  document.getElementById('f-claim-date').value=todayStr;
+  document.getElementById('f-warranty-type').value='Electronic (3 yr)';
+  document.getElementById('f-ho-status').value='Pending check';
+  document.getElementById('f-claim-status').value='Open — HO has part';
+  document.getElementById('f-supplier-accepted').value='Pending';
+  document.getElementById('f-routing').value='—';
+  document.getElementById('f-issue-type').value='One-off complaint';
+  toggleDefectNote();
+  document.getElementById('claim-modal').classList.add('open');
+}
+function objToRow(o){return[o.id,o.office,o.invoice,o.saleDate,o.claimDate,o.customer,o.location,o.machine,o.serial,o.warrantyType,o.part,o.hoStatus,o.claimStatus,o.supplierAccepted,o.routing,o.eta,o.issueType,o.notes];}
+function nextId(){
+  if(!claims.length)return'WC-001';
+  var nums=claims.map(function(c){return parseInt(c.id.replace('WC-',''))||0;});
+  return'WC-'+String(Math.max.apply(null,nums)+1).padStart(3,'0');
+}
+async function saveClaim(){
+  var btn=document.getElementById('save-btn');btn.disabled=true;btn.innerHTML='⏳ Saving...';
+  var isDef=document.getElementById('f-issue-type').value==='Manufacturing defect';
+  var obj={id:editingId||nextId(),office:document.getElementById('f-office-name').value,invoice:document.getElementById('f-invoice').value||'—',saleDate:document.getElementById('f-sale-date').value,claimDate:document.getElementById('f-claim-date').value,customer:document.getElementById('f-customer').value||'Unknown',location:document.getElementById('f-location').value||'—',machine:document.getElementById('f-machine').value||'—',serial:document.getElementById('f-serial').value||'—',warrantyType:document.getElementById('f-warranty-type').value,part:document.getElementById('f-part').value||'—',hoStatus:document.getElementById('f-ho-status').value,claimStatus:document.getElementById('f-claim-status').value,supplierAccepted:document.getElementById('f-supplier-accepted').value,routing:document.getElementById('f-routing').value,eta:document.getElementById('f-eta').value,issueType:document.getElementById('f-issue-type').value,notes:isDef?document.getElementById('f-defect-note').value:document.getElementById('f-notes').value};
+  try{
+    setSyncStatus('syncing','Saving...');hideErr();
+    if(editingId&&editingRow){
+      await post({action:'update',sheet:'Claims',rowNum:editingRow,row:objToRow(obj)});
+      var idx=claims.findIndex(function(c){return c.id===editingId;});
+      claims[idx]=Object.assign({},obj,{_row:editingRow});
+    }else{
+      await post({action:'append',sheet:'Claims',row:objToRow(obj)});
+      obj._row=claims.length+2;claims.push(obj);
+    }
+    setSyncStatus('ok','Saved · '+new Date().toLocaleTimeString('en-IN'));
+    showToast(editingId?'Claim updated':'New claim saved','success');
+    closeModal('claim-modal');renderTable();
+    if(isDef)showDefectAlert(obj);
+  }catch(e){setSyncStatus('error','Save failed');showErr(e.message);showToast('Save failed: '+e.message,'err');}
+  btn.disabled=false;btn.innerHTML='✓ Save to sheet';
+}
+function toggleDefectNote(){document.getElementById('defect-note-group').style.display=document.getElementById('f-issue-type').value==='Manufacturing defect'?'flex':'none';}
+function showDefectAlert(c){
+  var msg='URGENT — MANUFACTURING DEFECT ALERT
+HCA / HCAM — All Offices
+
+Machine model : '+c.machine+'
+Serial no.    : '+c.serial+'
+Part affected : '+c.part+'
+Reported by   : '+c.office+'
+Invoice no.   : '+c.invoice+' ('+c.customer+', '+c.location+')
+Claim ID      : '+c.id+'
+
+Defect details:
+'+(c.notes||'Please refer to claim record.')+'
+
+Action required:
+1. Check stock of '+c.machine+' — same production batch.
+2. Pre-order spare — '+c.part+'
+3. Inspect installed units under warranty.
+4. Log similar complaints against Claim ID '+c.id+'
+
+Claim routing : '+(c.routing||'TBD')+'
+Supplier status: '+c.supplierAccepted+'
+
+Regards
+'+c.office+' — Warranty Cell
+Hari Chand Anand & Co.';
+  document.getElementById('defect-alert-msg').textContent=msg;
+  document.getElementById('defect-alert-box').classList.add('show');
+  document.getElementById('defect-alert-box').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openDefectAlert(){
+  var defects=claims.filter(function(c){return c.issueType==='Manufacturing defect';});
+  if(!defects.length){showToast('No manufacturing defect claims on record.','err');return;}
+  showDefectAlert(defects[defects.length-1]);
+}
+function copyAlert(){
+  var txt=document.getElementById('defect-alert-msg').textContent;
+  navigator.clipboard.writeText(txt).then(function(){showToast('Alert copied','success');}).catch(function(){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Alert copied','success');});
+}
+
+// ── ISSUES ──
+async function loadIssues(){
+  try{
+    var res=await fetch(PROXY+'?sheet=Issues',{redirect:'follow'});
+    var data=JSON.parse(await res.text());
+    var rows=data.values||[];
+    var start=rows.length&&rows[0][0]==='Issue ID'?1:0;
+    issues2=rows.slice(start).filter(function(r){return r[0]&&String(r[0]).startsWith('IS-');}).map(function(r,i){return{_row:i+start+1,id:r[0]||'',date:r[1]||'',office:r[2]||'',customer:r[3]||'',location:r[4]||'',machine:r[5]||'',serial:r[6]||'',desc:r[7]||'',priority:r[8]||'Medium',status:r[9]||'Open',assigned:r[10]||'',invoice:r[11]||'',media:r[12]||'',resolution:r[13]||''};});
+    var open=issues2.filter(function(x){return x.status!=='Closed';}).length;
+    document.getElementById('tbadge-issues').textContent=open;
+    renderIssues();
+  }catch(e){document.getElementById('i-body').innerHTML='<tr><td colspan="11" class="table-empty">Load failed: '+e.message+'</td></tr>';}
+}
+function renderIssues(){
+  var q=document.getElementById('i-q').value.toLowerCase();
+  var fs=document.getElementById('i-st').value;
+  var fo=document.getElementById('i-of').value;
+  var sc=document.getElementById('i-sc').checked;
+  var tot=issues2.length,open=0,prog=0,cls=0;
+  issues2.forEach(function(x){if(x.status==='Open')open++;else if(x.status==='In progress')prog++;else cls++;});
+  document.getElementById('i-tot').textContent=tot;
+  document.getElementById('i-open').textContent=open;
+  document.getElementById('i-prog').textContent=prog;
+  document.getElementById('i-cls').textContent=cls;
+  var filtered=issues2.filter(function(x){
+    if(!sc&&x.status==='Closed')return false;
+    if(fs&&x.status!==fs)return false;
+    if(fo&&x.office!==fo)return false;
+    return!q||[x.id,x.customer,x.machine,x.desc].join(' ').toLowerCase().includes(q);
+  });
+  var body=document.getElementById('i-body');
+  if(!filtered.length){body.innerHTML='<tr><td colspan="11" class="table-empty">'+(issues2.length?'No issues match.':'No issues logged yet.')+'</td></tr>';return;}
+  var html='';
+  filtered.forEach(function(x){
+    var sc2=x.status==='Closed'?'b-oneoff':x.status==='In progress'?'b-pending':'b-ho';
+    var pc=x.priority==='High'?'b-overdue':x.priority==='Low'?'b-resolved':'b-pending';
+    html+='<tr>'+
+      '<td style="font-weight:600;font-size:11px">'+x.id+'</td>'+
+      '<td style="font-size:11px">'+fmtDate(x.date)+'</td>'+
+      '<td>'+x.office+'</td><td>'+x.customer+'</td><td>'+x.machine+'</td>'+
+      '<td style="font-size:11px">'+x.serial+'</td>'+
+      '<td style="white-space:normal;max-width:200px;font-size:12px">'+x.desc+'</td>'+
+      '<td><span class="badge '+pc+'">'+x.priority+'</span></td>'+
+      '<td><span class="badge '+sc2+'">'+x.status+'</span></td>'+
+      '<td>'+x.assigned+'</td>'+
+      '<td><button class="action-btn" data-id="'+x.id+'" onclick="openEditIssue(this.dataset.id)">&#9998;</button></td></tr>';
+  });
+  body.innerHTML=html;
+  document.getElementById('i-foot').textContent=filtered.length+' of '+issues2.length+' issues';
+}
+function openNewIssue(){
+  editIssueId=null;editIssueRow=null;
+  document.getElementById('im-title').textContent='Log machine issue';
+  ['i-cust','i-loc','i-mach','i-ser','i-desc','i-asgn','i-inv2','i-med','i-res'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('i-off').value='Kolkata';
+  document.getElementById('i-date').value=todayStr;
+  document.getElementById('i-pri').value='High';
+  document.getElementById('i-sta').value='Open';
+  document.getElementById('issue-modal').classList.add('open');
+}
+function openEditIssue(id){
+  var x=issues2.find(function(i){return i.id===id;});if(!x)return;
+  editIssueId=id;editIssueRow=x._row;
+  document.getElementById('im-title').textContent='Edit — '+id;
+  document.getElementById('i-date').value=x.date;document.getElementById('i-off').value=x.office;
+  document.getElementById('i-cust').value=x.customer;document.getElementById('i-loc').value=x.location;
+  document.getElementById('i-mach').value=x.machine;document.getElementById('i-ser').value=x.serial;
+  document.getElementById('i-desc').value=x.desc;document.getElementById('i-pri').value=x.priority;
+  document.getElementById('i-sta').value=x.status;document.getElementById('i-asgn').value=x.assigned;
+  document.getElementById('i-inv2').value=x.invoice;document.getElementById('i-med').value=x.media;
+  document.getElementById('i-res').value=x.resolution;
+  document.getElementById('issue-modal').classList.add('open');
+}
+async function saveIssue(){
+  var btn=document.getElementById('save-issue-btn');btn.disabled=true;btn.textContent='Saving...';
+  var id=editIssueId||('IS-'+String(issues2.length+1).padStart(3,'0'));
+  var row=[id,document.getElementById('i-date').value||todayStr,document.getElementById('i-off').value,document.getElementById('i-cust').value||'—',document.getElementById('i-loc').value||'—',document.getElementById('i-mach').value||'—',document.getElementById('i-ser').value||'—',document.getElementById('i-desc').value||'—',document.getElementById('i-pri').value,document.getElementById('i-sta').value,document.getElementById('i-asgn').value||'—',document.getElementById('i-inv2').value||'—',document.getElementById('i-med').value||'—',document.getElementById('i-res').value||'—'];
+  try{
+    var existing=issues2.find(function(x){return x.id===id;});
+    await post(existing?{action:'update',sheet:'Issues',rowNum:existing._row,row:row}:{action:'append',sheet:'Issues',row:row});
+    showToast('Issue saved','success');closeOverlay2('issue-modal');
+    issues2=[];await loadIssues();
+  }catch(e){showToast('Save failed: '+e.message,'err');}
+  btn.disabled=false;btn.textContent='Save issue';
+}
+
+// ── RETURNS ──
+async function loadReturns(){
+  try{
+    var res=await fetch(PROXY+'?sheet=Returns',{redirect:'follow'});
+    var data=JSON.parse(await res.text());
+    var rows=data.values||[];
+    var start=rows.length&&rows[0][0]==='Return ID'?1:0;
+    returns2=rows.slice(start).filter(function(r){return r[0]&&String(r[0]).startsWith('RT-');}).map(function(r,i){return{_row:i+start+1,id:r[0]||'',date:r[1]||'',claimId:r[2]||'',customer:r[3]||'',machine:r[4]||'',parts:r[5]||'',destination:r[6]||'',mode:r[7]||'',challan:r[8]||'',tracking:r[9]||'',status:r[10]||'Pending',notes:r[11]||''};});
+    var pend=returns2.filter(function(x){return x.status==='Pending';}).length;
+    document.getElementById('tbadge-returns').textContent=pend;
+    renderReturns();
+  }catch(e){document.getElementById('r-body').innerHTML='<tr><td colspan="11" class="table-empty">Load failed: '+e.message+'</td></tr>';}
+}
+function renderReturns(){
+  var q=document.getElementById('r-q').value.toLowerCase();
+  var fs=document.getElementById('r-st').value;
+  var fd=document.getElementById('r-de').value;
+  var tot=returns2.length,pend=0,sent=0,ack=0;
+  returns2.forEach(function(x){if(x.status==='Pending')pend++;else if(x.status==='Sent')sent++;else ack++;});
+  document.getElementById('r-tot').textContent=tot;document.getElementById('r-pend').textContent=pend;
+  document.getElementById('r-sent').textContent=sent;document.getElementById('r-ack').textContent=ack;
+  var filtered=returns2.filter(function(x){
+    if(fs&&x.status!==fs)return false;
+    if(fd&&x.destination!==fd)return false;
+    return!q||[x.id,x.claimId,x.customer,x.machine,x.parts].join(' ').toLowerCase().includes(q);
+  });
+  var body=document.getElementById('r-body');
+  if(!filtered.length){body.innerHTML='<tr><td colspan="11" class="table-empty">'+(returns2.length?'No returns match.':'No returns logged yet.')+'</td></tr>';return;}
+  var html='';
+  filtered.forEach(function(x){
+    var sc=x.status==='Acknowledged'?'b-resolved':x.status==='Sent'?'b-dispatched':'b-pending';
+    html+='<tr>'+
+      '<td style="font-weight:600;font-size:11px">'+x.id+'</td>'+
+      '<td style="font-size:11px">'+x.claimId+'</td>'+
+      '<td style="font-size:11px">'+fmtDate(x.date)+'</td>'+
+      '<td>'+x.customer+'</td><td>'+x.machine+'</td>'+
+      '<td style="max-width:140px;font-size:12px">'+x.parts+'</td>'+
+      '<td>'+x.destination+'</td><td>'+x.mode+'</td>'+
+      '<td style="font-size:11px">'+x.challan+'</td>'+
+      '<td><span class="badge '+sc+'">'+x.status+'</span></td>'+
+      '<td><button class="action-btn" data-id="'+x.id+'" onclick="openEditReturn(this.dataset.id)">&#9998;</button></td></tr>';
+  });
+  body.innerHTML=html;
+  document.getElementById('r-foot').textContent=filtered.length+' of '+returns2.length+' returns';
+}
+function openNewReturn(){
+  editReturnId=null;
+  document.getElementById('rm-title').textContent='Log return';
+  ['r-cust','r-mach','r-prts','r-chal','r-trk','r-nts'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('r-date').value=todayStr;document.getElementById('r-clm').value='';
+  document.getElementById('r-dest').value='HO Delhi';document.getElementById('r-mode').value='Courier';
+  document.getElementById('r-sta').value='Pending';
+  document.getElementById('return-modal').classList.add('open');
+}
+function openEditReturn(id){
+  var x=returns2.find(function(r){return r.id===id;});if(!x)return;
+  editReturnId=id;
+  document.getElementById('rm-title').textContent='Edit — '+id;
+  document.getElementById('r-date').value=x.date;document.getElementById('r-clm').value=x.claimId;
+  document.getElementById('r-cust').value=x.customer;document.getElementById('r-mach').value=x.machine;
+  document.getElementById('r-prts').value=x.parts;document.getElementById('r-dest').value=x.destination;
+  document.getElementById('r-mode').value=x.mode;document.getElementById('r-chal').value=x.challan;
+  document.getElementById('r-trk').value=x.tracking;document.getElementById('r-sta').value=x.status;
+  document.getElementById('r-nts').value=x.notes;
+  document.getElementById('return-modal').classList.add('open');
+}
+async function saveReturn(){
+  var btn=document.getElementById('save-return-btn');btn.disabled=true;btn.textContent='Saving...';
+  var id=editReturnId||('RT-'+String(returns2.length+1).padStart(3,'0'));
+  var row=[id,document.getElementById('r-date').value||todayStr,document.getElementById('r-clm').value||'—',document.getElementById('r-cust').value||'—',document.getElementById('r-mach').value||'—',document.getElementById('r-prts').value||'—',document.getElementById('r-dest').value,document.getElementById('r-mode').value,document.getElementById('r-chal').value||'—',document.getElementById('r-trk').value||'—',document.getElementById('r-sta').value,document.getElementById('r-nts').value||'—'];
+  try{
+    var existing=returns2.find(function(r){return r.id===id;});
+    await post(existing?{action:'update',sheet:'Returns',rowNum:existing._row,row:row}:{action:'append',sheet:'Returns',row:row});
+    showToast('Return saved','success');closeOverlay2('return-modal');
+    returns2=[];await loadReturns();
+  }catch(e){showToast('Save failed: '+e.message,'err');}
+  btn.disabled=false;btn.textContent='Save return';
+}
+
+loadData();
+</script>
+</body>
+</html>
