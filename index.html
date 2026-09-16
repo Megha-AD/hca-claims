@@ -949,7 +949,7 @@ async function loadData() {
   setSyncStatus('syncing', 'Syncing...');
   hideErr();
   try {
-    const res = await fetch(PROXY, {redirect:'follow'});
+    const res = await fetch(PROXY + '?sheet=Claims', {redirect:'follow'});
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); }
